@@ -1,0 +1,114 @@
+#!/bin/sh
+
+
+BIN_CC=/usr/bin/g++
+
+
+INC="-I./"
+LIBS_INC=""
+OPT_LIBS_INC_WIN32_SDL1=""
+OPT_LIBS_INC_WIN32_SDL1_MIXER=""
+OPT_LIBS_INC_WIN32_SDL2="../../libs_win32/sdl/v2.0/SDL2-2.0.3"
+OPT_LIBS_INC_WIN32_SDL2_MIXER="../../libs_win32/sdl/v2.0/SDL2_mixer-2.0.0"
+OPT_LIBS_INC_WIN32_SDL2_AND_MIXER_ALL="../../libs_win32/sdl/v2.0"
+OPT_LIBS_INC_WIN32_SDL2_IMAGE="../../libs_win32/SDL_Image/SDL_Image_v2.0/SDL2_image-2.0.1"
+OPT_LIBS_INC_WIN32_LIBJPEG_TURBO="libjpeg-turbo/libjpeg-turbo-1.5.2-gcc"
+OPT_SDL_V1="-D__SDLv1__"
+OPT_SDL_V2="-D__SDLv2__"
+OPT_SDL_VERSION="$OPT_SDL_V2"
+#
+#
+#OPT_LIBS_INC_WIN32_MINGW="/usr/i686-pc-mingw32/sys-root/mingw/lib"
+OPT_LIBS_INC_WIN32_SDL="$OPT_LIBS_INC_WIN32_SDL2"
+OPT_LIBS_INC_WIN32_SDL_MIXER="$OPT_LIBS_INC_WIN32_SDL2_MIXER"
+OPT_LIBS_INC_WIN32_SDL_IMAGE="$OPT_LIBS_INC_WIN32_SDL2_IMAGE"
+#LIBS_WIN32_MINGW="-lmingw32"
+#
+#
+# Error: undefined reference to `WinMain@16'
+#OPT_WIN32_GUI_MAIN="-Wl,-u,_WinMain@16"
+#OPT_WIN32_GUI_APP="-mwindows -lm"
+#OPT_WIN32_GUI="$OPT_WIN32_GUI_MAIN $OPT_WIN32_GUI_APP"
+#
+#
+LIBS_WIN32_SDL1="-lSDLmain -lSDL -lSDL_mixer"
+#LIBS_WIN32_SDL2="-lcygwin -lSDL2main -lSDL2 -lSDL2_mixer"
+LIBS_WIN32_SDL2="-lSDL2main -lSDL2 -lSDL2_mixer -lSDL2_image"
+LIBS_WIN32_LIBJPEG_TURBO="-ljpeg -lturbojpeg"
+#
+#
+OPT_LIBS_NATIVE="i686"
+OPT_LIBS_CROSSPLATFORM="x86_64"
+OPT_LIBS_ARCH="$OPT_LIBS_NATIVE"
+#OPT_LIBS_ARCH="$OPT_LIBS_CROSSPLATFORM"
+#
+#
+OPT_LIBS_INC_WIN32="\
+	-I$OPT_LIBS_INC_WIN32_SDL/$OPT_LIBS_ARCH-w64-mingw32/include	\
+	-I$OPT_LIBS_INC_WIN32_SDL/include	\
+	-I$OPT_LIBS_INC_WIN32_SDL_MIXER/$OPT_LIBS_ARCH-w64-mingw32/include	\
+	-L$OPT_LIBS_INC_WIN32_SDL/$OPT_LIBS_ARCH-w64-mingw32/lib	\
+	-L$OPT_LIBS_INC_WIN32_SDL/$OPT_LIBS_ARCH-w64-mingw32/bin	\
+	-L$OPT_LIBS_INC_WIN32_SDL/lib/x86	\
+	-L$OPT_LIBS_INC_WIN32_SDL_MIXER/$OPT_LIBS_ARCH-w64-mingw32/lib	\
+	-L$OPT_LIBS_INC_WIN32_SDL_MIXER/$OPT_LIBS_ARCH-w64-mingw32/bin	\
+	-I$OPT_LIBS_INC_WIN32_SDL_IMAGE/$OPT_LIBS_ARCH-w64-mingw32/include	\
+	-L$OPT_LIBS_INC_WIN32_SDL_IMAGE/$OPT_LIBS_ARCH-w64-mingw32/lib	\
+	-L$OPT_LIBS_INC_WIN32_SDL_IMAGE/$OPT_LIBS_ARCH-w64-mingw32/bin	\
+	-I$OPT_LIBS_INC_WIN32_LIBJPEG_TURBO/include	\
+	-L$OPT_LIBS_INC_WIN32_LIBJPEG_TURBO/lib
+"
+# Checks binaries for the architecture
+#OPT_LIBS_INC_WIN32="\
+#	-I$OPT_LIBS_INC_WIN32_SDL/$OPT_LIBS_ARCH-w64-mingw32/include	\
+#	-I$OPT_LIBS_INC_WIN32_SDL/include	\
+#	-I$OPT_LIBS_INC_WIN32_SDL_MIXER/$OPT_LIBS_ARCH-w64-mingw32/include	\
+#	-L$OPT_LIBS_INC_WIN32_SDL2_AND_MIXER_ALL	\
+#"
+OPT_LIBS_WIN32="$LIBS_WIN32_SDL2 $LIBS_WIN32_LIBJPEG_TURBO"
+SRC_FILES="
+
+"
+DEBUG="-g"
+#OPT_VERBOSE="-Wl,-verbose"
+OPT_WIN32_CYGWIN="-D__LINUX__ -D__WIN32_CYGWIN__"
+CFLAGS="$DEBUG $OPT_VERBOSE $OPT_WIN32_CYGWIN"
+#CFLAGS="$DEBUG $OPT_VERBOSE $OPT_WIN32_CYGWIN -Dmain=SDL_main"
+# C++11
+OPT_CPP11="-std=gnu++0x"
+#OPT_CPP11="-std=c++0x"
+#OPT_CPP11="-std=c++11"
+OPT_CPP="$OPT_CPP11"
+OPTS="-Wall -O2 $CFLAGS $OPT_CPP $OPT_SDL_VERSION $INC $OPT_LIBS_INC_WIN32 $OPT_LIBS_WIN32"
+
+
+#if [ -z "$1" ] || [ -z "$2" ]; then
+#	echo $0
+#	echo "Usage: sh $0 {output} {input}"
+#	echo ""
+#	exit
+#fi
+
+#OUTPUT=$1
+#INPUT=$2
+OUTPUT="a"
+INPUT="CSDLOpenGLTest.cpp"
+BUILD="$BIN_CC -o $OUTPUT $INPUT $SRC_FILES $OPTS"
+
+echo '---------------'
+echo 'Build...'
+echo '---------------'
+echo $BUILD
+$BUILD
+
+#echo ""
+# Checks the last command return value
+if [ $? -ne 0 ]; then
+	echo ""
+	echo "[-] build... [FINISHED] [FAIL]"
+else
+	echo ""
+	echo "[+] build... [FINISHED] [SUCCESS]"
+fi
+
+# EOF
