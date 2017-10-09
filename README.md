@@ -7,6 +7,7 @@ Prerequisites
 ----------
 > build all and tested on Cygwin (Windows)
 
+    Cygwin: https://www.cygwin.com/
     SDL2: https://www.libsdl.org/
     SDL_image 2.0: https://www.libsdl.org/projects/SDL_image/
     libjpeg-turbo: https://libjpeg-turbo.org/
