@@ -3,7 +3,7 @@ Project:	SDL OpenGL, streaming image Test
 Purpose:	TEST only !!!
 Author:		Ho-Jung Kim (godmode2k@hotmail.com)
 Date:		Since Oct 7, 2017
-Filename:	CSDLOpenGLTest.c
+Filename:	CSDLOpenGLTest.cpp
 
 Last modified: Oct 7, 2017
 License:

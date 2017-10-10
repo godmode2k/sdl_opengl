@@ -8,7 +8,7 @@ Author:		Ho-Jung Kim (godmode2k@hotmail.com)
 Date:		Since Oct 7, 2017
 Filename:	CSDLOpenGLTest.h
 
-Last modified: Oct 7, 2017
+Last modified: Oct 10, 2017
 License:
 
 *
@@ -64,9 +64,17 @@ Note:
 	#else
 	#endif
 #else
-	#include <SDL/SDL.h>
-	#include <SDL/SDL_mixer.h>
-	#include <SDL/SDL_video.h>
+	#ifdef __SDLv1__
+		#include <SDL/SDL.h>
+		#include <SDL/SDL_mixer.h>
+		#include <SDL/SDL_video.h>
+	#elif __SDLv2__
+		#include <SDL2/SDL.h>
+		#include <SDL2/SDL_mixer.h>
+		#include <SDL2/SDL_video.h>
+		#include <SDL2/SDL_image.h>
+	#else
+	#endif
 #endif
 
 #include <errno.h> 
