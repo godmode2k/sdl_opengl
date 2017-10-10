@@ -5,7 +5,7 @@ Author:		Ho-Jung Kim (godmode2k@hotmail.com)
 Date:		Since Oct 7, 2017
 Filename:	CSDLOpenGLTest.cpp
 
-Last modified: Oct 7, 2017
+Last modified: Oct 10, 2017
 License:
 
 *
@@ -74,6 +74,8 @@ void CSDLOpenGLTest::__init(void) {
 	//__LOGT__( TAG, "__init()" );
 	fprintf( stdout, "__init()\n" );
 
+	m_image_buffer_compressed = NULL;
+	m_image_buffer_compressed_size = 0;
 }
 
 // Release
@@ -81,10 +83,85 @@ void CSDLOpenGLTest::__release(void) {
 	//__LOGT__( TAG, "__release()" );
 	fprintf( stdout, "__release()\n" );
 
+	if ( m_image_buffer_compressed ) {
+		tjFree( m_image_buffer_compressed );
+		m_image_buffer_compressed = NULL;
+	}
 }
 // ---------------------------------------------------------------
+int CSDLOpenGLTest::tj_compress(void) {
+	fprintf( stdout, "tj_compress()\n" );
+	int ret = -1;
 
+	if ( m_image_buffer_compressed ) {
+		tjFree( m_image_buffer_compressed );
+		m_image_buffer_compressed = NULL;
+	}
 
+	tjhandle handle = tjInitCompress();
+	int pitch = 0;
+	int pixel_format = TJPF_RGB;
+	long unsigned int jpeg_size = 0;
+	int sub_sampling = TJSAMP_444;
+	int jpeg_quality = 75;
+	int flags = TJFLAG_FASTDCT;
+
+	ret = tjCompress2( handle, m_image_buffer,
+						SCREEN_WIDTH, pitch, SCREEN_HEIGHT,
+						pixel_format,
+						&m_image_buffer_compressed,
+						&jpeg_size,
+						sub_sampling,
+						jpeg_quality,
+						flags );
+
+	m_image_buffer_compressed_size = jpeg_size;
+
+	tjDestroy( handle );
+
+	return ret;
+}
+
+int CSDLOpenGLTest::tj_decompress(void) {
+	fprintf( stdout, "tj_decompress()\n" );
+	int ret = -1;
+
+	if ( !m_image_buffer_compressed ) {
+		fprintf( stderr, "tj_decompress(): buffer == NULL\n" );
+		return ret;
+	}
+
+	if ( m_image_buffer_compressed_size <= 0 ) {
+		fprintf( stderr, "tj_decompress(): buffer size == NULL\n" );
+		return ret;
+	}
+
+	tjhandle handle = tjInitDecompress();
+	long unsigned int jpeg_size = m_image_buffer_compressed_size;
+	int sub_sampling, width, height;
+	int pitch = 0;
+	int pixel_format = TJPF_RGB;
+	int flags = TJFLAG_FASTDCT;
+
+	ret = tjDecompressHeader2( handle, m_image_buffer_compressed,
+						jpeg_size, &width, &height, &sub_sampling );
+	if ( ret < 0 ) {
+		fprintf( stderr, "tj_decompress(): error: get header\n%s\n", tjGetErrorStr() );
+		return ret;
+	}
+
+	m_image_buffer_decompressed = new unsigned char[width * height * IMAGE_BPP];
+
+	ret = tjDecompress2( handle, m_image_buffer_compressed,
+					jpeg_size,
+					m_image_buffer_decompressed,
+					width, pitch, height, pixel_format, flags );
+
+	tjDestroy( handle );
+
+	return ret;
+}
+// ---------------------------------------------------------------
 
 
 
@@ -354,11 +431,14 @@ int main(int argc, char* argv[]) {
 					// ...
 
 
+#if __SDLv1__
+#elif __SDLv2__
 					//IMG_Init( IMG_INIT_JPG );
 					//texture = IMG_LoadTexture( renderer, "test.jpg" );
 					//
 					SDL_RenderCopy( renderer, texture, NULL, NULL );
 					SDL_RenderPresent( renderer );
+#endif
 				}
 				else {
 					if ( sockfd_client < 0 ) {

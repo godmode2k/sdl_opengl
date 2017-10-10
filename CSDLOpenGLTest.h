@@ -102,6 +102,7 @@ extern "C" {
 
 #define SCREEN_WIDTH				640
 #define SCREEN_HEIGHT				480
+#define IMAGE_BPP					3		// byte
 
 #define DEFAULT_IPV4_ADDR			"127.0.0.1"
 #define DEFAULT_PORT				8080
@@ -129,6 +130,12 @@ extern "C" {
 class CSDLOpenGLTest {
 private:
 	const char* TAG;
+
+	// test only
+	unsigned char m_image_buffer[SCREEN_WIDTH * SCREEN_HEIGHT * IMAGE_BPP];
+	unsigned char* m_image_buffer_compressed;
+	long unsigned int m_image_buffer_compressed_size;
+	unsigned char* m_image_buffer_decompressed;
 protected:
 public:
 	// Ctor/Dtor
@@ -142,6 +149,8 @@ public:
 
 	//void usage(const char** argv);
 
+	int tj_compress(void);
+	int tj_decompress(void);
 	// ---------------------------------------------------------------
 };
 // ---------------------------------------------------------------
