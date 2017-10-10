@@ -115,10 +115,6 @@ int main(int argc, char* argv[]) {
 	// Network
 	bool client_mode = false;
 	int sockfd;
-	struct addrinfo client_psinfo;
-	struct addrinfo* foo = &client_psinfo;
-	struct addrinfo** client_psinfo_p = &foo;
-	//char* ip6_addr = "2001:7f0:3003:cafe:222:f9ff:fe01:c65";
 	char* ipv4_addr = DEFAULT_IPV4_ADDR;
 	int port = DEFAULT_PORT;
     int data_bytes = 0;
@@ -327,7 +323,7 @@ int main(int argc, char* argv[]) {
 					//bytes = write( sockfd_client, buf, sizeof(buf) );
 					if ( bytes <= 0 ) {
 						fprintf( stderr, "error: send(): %d bytes\n", bytes );
-						break;
+						//break;
 					}
 					else {
 						fprintf( stdout, "send(): sent = %d (%d bytes)\n", buf, bytes );

@@ -14,9 +14,10 @@ Prerequisites
     test image: test.jpg
 
     Ubuntu Linux:
-    $ apt-get install libsdl2-2.0-0 libsdl2-dev
-    $ apt-get install libsdl2-image-2.0-0 libsdl2-image-dev
-    $ apt-get install libjpeg-turbo8 libjpeg-turbo8-dev
+    $ sudo apt-get install libsdl2-2.0-0 libsdl2-dev
+    $ sudo apt-get install libsdl2-mixer-2.0-0 libsdl2-mixer-dev
+    $ sudo apt-get install libsdl2-image-2.0-0 libsdl2-image-dev
+    $ sudo apt-get install libjpeg-turbo8 libjpeg-turbo8-dev
 
 
 Build
