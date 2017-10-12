@@ -23,6 +23,7 @@ LIBS="
 	$LIBS_SDL_V2	\
 	-ljpeg			\
 	-lturbojpeg		\
+	-lGL			\
 "
 SRC_FILES="
 "

@@ -56,11 +56,16 @@ Note:
 		#include <SDL/SDL.h>
 		#include <SDL/SDL_mixer.h>
 		#include <SDL/SDL_video.h>
+		#include <SDL/SDL_image.h>
+		#include <SDL/SDL_opengl.h>
+		//#include <SDL/SDL_opengles.h>
 	#elif __SDLv2__
 		#include <SDL2/SDL.h>
 		#include <SDL2/SDL_mixer.h>
 		#include <SDL2/SDL_video.h>
 		#include <SDL2/SDL_image.h>
+		#include <SDL2/SDL_opengl.h>
+		//#include <SDL2/SDL_opengles.h>
 	#else
 	#endif
 #else
@@ -68,11 +73,16 @@ Note:
 		#include <SDL/SDL.h>
 		#include <SDL/SDL_mixer.h>
 		#include <SDL/SDL_video.h>
+		#include <SDL/SDL_image.h>
+		#include <SDL/SDL_opengl.h>
+		//#include <SDL/SDL_opengles.h>
 	#elif __SDLv2__
 		#include <SDL2/SDL.h>
 		#include <SDL2/SDL_mixer.h>
 		#include <SDL2/SDL_video.h>
 		#include <SDL2/SDL_image.h>
+		#include <SDL2/SDL_opengl.h>
+		//#include <SDL2/SDL_opengles.h>
 	#else
 	#endif
 #endif
@@ -100,8 +110,8 @@ extern "C" {
 }
 #endif
 
-#define SCREEN_WIDTH				640
-#define SCREEN_HEIGHT				480
+#define WINDOW_WIDTH				640
+#define WINDOW_HEIGHT				480
 #define IMAGE_BPP					3		// byte
 
 #define DEFAULT_IPV4_ADDR			"127.0.0.1"
@@ -118,6 +128,11 @@ extern "C" {
 #ifdef __cplusplus
 extern "C" {
 #endif
+// htof(), ntohf()
+// Source: https://beej.us/guide/bgnet/examples/pack.c
+uint32_t htonf(float f);
+float ntohf(uint32_t p);
+int test_htonf_ntohf(void);
 #ifdef __cplusplus
 }
 #endif
@@ -132,7 +147,7 @@ private:
 	const char* TAG;
 
 	// test only
-	unsigned char m_image_buffer[SCREEN_WIDTH * SCREEN_HEIGHT * IMAGE_BPP];
+	unsigned char m_image_buffer[WINDOW_WIDTH * WINDOW_HEIGHT * IMAGE_BPP];
 	unsigned char* m_image_buffer_compressed;
 	long unsigned int m_image_buffer_compressed_size;
 	unsigned char* m_image_buffer_decompressed;

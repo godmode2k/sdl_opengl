@@ -89,6 +89,44 @@ void CSDLOpenGLTest::__release(void) {
 	}
 }
 // ---------------------------------------------------------------
+uint32_t htonf(float f) {
+	uint32_t p;
+	uint32_t sign;
+
+	if (f < 0) { sign = 1; f = -f; }
+	else { sign = 0; }
+		
+	p = ((((uint32_t)f)&0x7fff)<<16) | (sign<<31); // whole part and sign
+	p |= (uint32_t)(((f - (int)f) * 65536.0f))&0xffff; // fraction
+
+	return p;
+}
+
+float ntohf(uint32_t p) {
+	float f = ((p>>16)&0x7fff); // whole part
+	f += (p&0xffff) / 65536.0f; // fraction
+
+	if (((p>>31)&0x1) == 0x1) { f = -f; } // sign bit set
+
+	return f;
+}
+
+// htof(), ntohf()
+// Source: https://beej.us/guide/bgnet/examples/pack.c
+int test_htonf_ntohf(void) {
+	float f = 3.1415926, f2;
+	uint32_t netf;
+
+	netf = htonf(f);
+	f2 = ntohf(netf);
+
+	printf("Original: %f\n", f);
+	printf(" Network: 0x%08X\n", netf);
+	printf("Unpacked: %f\n", f2);
+
+	return 0;
+}
+// ---------------------------------------------------------------
 int CSDLOpenGLTest::tj_compress(void) {
 	fprintf( stdout, "tj_compress()\n" );
 	int ret = -1;
@@ -107,7 +145,7 @@ int CSDLOpenGLTest::tj_compress(void) {
 	int flags = TJFLAG_FASTDCT;
 
 	ret = tjCompress2( handle, m_image_buffer,
-						SCREEN_WIDTH, pitch, SCREEN_HEIGHT,
+						WINDOW_WIDTH, pitch, WINDOW_HEIGHT,
 						pixel_format,
 						&m_image_buffer_compressed,
 						&jpeg_size,
@@ -183,10 +221,11 @@ int main(int argc, char* argv[]) {
 #if __SDLv1__
 	SDL_Surface* screen = NULL;
 #elif __SDLv2__
-	SDL_Window* screen = NULL;
+	SDL_Window* window = NULL;
 #endif
     SDL_Renderer* renderer = NULL;
     SDL_Texture* texture = NULL;
+	SDL_GLContext gl_context = NULL;
 
 
 	// Network
@@ -237,8 +276,7 @@ int main(int argc, char* argv[]) {
 	// Init
 	// SDL_INIT_VIDEO, SDL_INIT_AUDIO, SDL_INIT_EVERYTHING
 	if ( SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0 ) {
-		fprintf( stderr, "main(): Unable to initalized SDL: %s\n", SDL_GetError() );
-		//return -1;
+		fprintf( stderr, "main(): SDL_Init(): %s\n", SDL_GetError() );
 		goto _RELEASE;
 	}
 
@@ -247,9 +285,9 @@ int main(int argc, char* argv[]) {
 	{
 #if __SDLv1__
 		// SDL_ANYFORMAT, SDL_DOUBLEBUF
-		screen = SDL_SetVideoMode( SCREEN_WIDTH, SCREEN_HEIGHT, 32, SDL_DOUBLEBUF );	
+		screen = SDL_SetVideoMode( WINDOW_WIDTH, WINDOW_HEIGHT, 32, SDL_DOUBLEBUF );	
 		if ( screen == NULL ) {
-			fprintf( stderr, "main(): Unable to set Video mode: %s\n", Mix_GetError() );
+			fprintf( stderr, "main(): SDL_SetVideoMode(): %s\n", SDL_GetError() );
 			goto _RELEASE;
 		}
 
@@ -268,15 +306,21 @@ int main(int argc, char* argv[]) {
 			SDL_UpdateRect( screen, 10, 10, 50, 50 );
 		}
 #elif __SDLv2__
-		//screen = SDL_CreateWindow( "OpenGL, streaming image Test",
-		//							SDL_WINDOWPOS_UNDEFINED,
-		//							SDL_WINDOWPOS_UNDEFINED,
-		//							__WINDOW_W, __WINDOW_H,
-		//							SDL_WINDOW_OPENGL );
-		SDL_CreateWindowAndRenderer( SCREEN_WIDTH, SCREEN_HEIGHT,
-									0, &screen, &renderer );
-		if ( screen == NULL ) {
-			fprintf( stderr, "main(): Unable to set Video mode: %s\n", Mix_GetError() );
+		window = SDL_CreateWindow( "OpenGL, streaming image Test",
+						SDL_WINDOWPOS_UNDEFINED,
+						SDL_WINDOWPOS_UNDEFINED,
+						WINDOW_WIDTH, WINDOW_HEIGHT,
+						SDL_WINDOW_OPENGL );
+		//SDL_CreateWindowAndRenderer( WINDOW_WIDTH, WINDOW_HEIGHT,
+		//							0, &window, &renderer );
+		if ( window == NULL ) {
+			fprintf( stderr, "main(): SDL_CreateWindow(): %s\n", SDL_GetError() );
+			goto _RELEASE;
+		}
+
+		renderer = SDL_CreateRenderer( window, -1, SDL_RENDERER_ACCELERATED );
+		if ( renderer == NULL ) {
+			fprintf( stderr, "main(): SDL_CreateRenderer(): %s\n", SDL_GetError() );
 			goto _RELEASE;
 		}
 
@@ -284,6 +328,38 @@ int main(int argc, char* argv[]) {
 		texture = IMG_LoadTexture( renderer, "test.jpg" );
 #endif
 	}
+
+
+	// OpenGL
+	{
+#if __SDLv1__
+#elif __SDLv2__
+		SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 2 );
+		SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 0 );
+		//SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES );
+		SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE );
+		SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 24 );
+		SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+
+		gl_context = SDL_GL_CreateContext( window );
+		if ( gl_context == NULL ) {
+			fprintf( stderr, "main(): SDL_GL_CreateContext(): %s\n", SDL_GetError() );
+			goto _RELEASE;
+		}
+
+		fprintf( stdout, "main(): GL_VERSION: %s\n", glGetString(GL_VERSION) );
+		fprintf( stdout, "main(): GL_VENDOR : %s\n", glGetString(GL_VENDOR) );
+		fprintf( stdout, "main(): GL_RENDERER: %s\n", glGetString(GL_RENDERER) );
+
+		//SDL_GL_SetSwapInterval( 0 );
+
+		if ( SDL_GL_MakeCurrent(window, gl_context) < 0 ) {
+			fprintf( stderr, "main(): SDL_GL_MakeCurrent(): %s\n", SDL_GetError() );
+			goto _RELEASE;
+		}
+#endif
+	}
+
 
 
 	{
@@ -451,14 +527,23 @@ int main(int argc, char* argv[]) {
 					}
 #if __SDLv1__
 #elif __SDLv2__
-					SDL_RenderCopy( renderer, texture, NULL, NULL );
-					SDL_RenderPresent( renderer );
+					//SDL_RenderCopy( renderer, texture, NULL, NULL );
+					//SDL_RenderPresent( renderer );
+
+					glClearColor( 1.0f, 0.0f, 0.0f, 1.0f );
+					glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+					glLoadIdentity();
 
 					// sendto()
 					// ...
 #endif
 				}
 			}
+
+#if __SDLv1__
+#elif __SDLv2__
+			SDL_GL_SwapWindow( window );
+#endif
 		} // while ()
 	}
 
@@ -473,26 +558,31 @@ _RELEASE:
 		}
 
 #if __SDLv1__
+		if ( screen ) {
+			SDL_DestroySurface( screen );
+			screen = NULL;
+		}
 #elif __SDLv2__
 		if ( texture ) {
 			SDL_DestroyTexture( texture );
 			texture = NULL;
 		}
+		
 		IMG_Quit();
+
 		if ( renderer ) {
 			SDL_DestroyRenderer( renderer );
 			renderer = NULL;
 		}
 
-		if ( screen ) {
-			SDL_DestroyWindow( screen );
-			screen = NULL;
+		if ( window ) {
+			SDL_DestroyWindow( window );
+			window = NULL;
 		}
 #endif
 	}
 
-
-
+	SDL_GL_DeleteContext( gl_context );
 	SDL_Quit();
 
 	if ( app ) {
