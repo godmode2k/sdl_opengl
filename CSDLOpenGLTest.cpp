@@ -465,15 +465,15 @@ int main(int argc, char* argv[]) {
 			{
 				if ( client_mode ) {
 					int bytes = 0;
-					int buf_data_len = 0;
+					int total_bytes = 0;
 					unsigned char buf[DEFAULT_RECV_BUF_SIZE] = {0,};
 					unsigned char buf_data[DEFAULT_DATA_BUF_SIZE] = {0,};
 
 					// send
 					//
 					fprintf( stdout, "send...\n" );
-					bytes = send( sockfd_client, buf, sizeof(buf), 0 );
-					//bytes = write( sockfd_client, buf, sizeof(buf) );
+					//bytes = send( sockfd_client, buf, sizeof(buf), 0 );
+					bytes = write( sockfd_client, buf, sizeof(buf) );
 					if ( bytes <= 0 ) {
 						fprintf( stderr, "error: send(): %d bytes\n", bytes );
 						//break;
@@ -485,21 +485,23 @@ int main(int argc, char* argv[]) {
 						// receive
 						//! TODO: select()
 						while ( 1 ) {
+							memset( buf, 0x00, sizeof(buf) );
+
 							// TCP
-							bytes = recv( sockfd_client, buf, sizeof(buf), 0 );
-							//bytes = read( sockfd_client, buf, sizeof(buf) );
+							//bytes = recv( sockfd_client, buf, sizeof(buf), 0 );
+							bytes = read( sockfd_client, buf, sizeof(buf) );
 							if ( bytes <= 0 ) {
 								fprintf( stderr, "error: recv(): %d bytes\n", bytes );
 								break;
 							}
-							//! TODO: checks received size
-							memcpy( buf_data, buf, buf_data_len );
-							buf_data_len += bytes;
+							memcpy( buf_data + total_bytes, buf, bytes );
+							total_bytes += bytes;
 
 
 							// UDP
 							// recvfrom()
 						}
+						fprintf( stdout, "send(): received = %d bytes\n", buf, total_bytes );
 					}
 
 
