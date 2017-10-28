@@ -138,11 +138,11 @@ int CSDLOpenGLTest::tj_compress(void) {
 
 	tjhandle handle = tjInitCompress();
 	int pitch = 0;
-	int pixel_format = TJPF_RGB;
+	int pixel_format = TJPF_RGBA;
 	long unsigned int jpeg_size = 0;
 	int sub_sampling = TJSAMP_444;
 	int jpeg_quality = 75;
-	int flags = TJFLAG_FASTDCT;
+	int flags = 0;//TJFLAG_FASTDCT;
 
 	ret = tjCompress2( handle, m_image_buffer,
 						WINDOW_WIDTH, pitch, WINDOW_HEIGHT,
@@ -178,8 +178,8 @@ int CSDLOpenGLTest::tj_decompress(void) {
 	long unsigned int jpeg_size = m_image_buffer_compressed_size;
 	int sub_sampling, width, height;
 	int pitch = 0;
-	int pixel_format = TJPF_RGB;
-	int flags = TJFLAG_FASTDCT;
+	int pixel_format = TJPF_RGBA;
+	int flags = 0;//TJFLAG_FASTDCT;
 
 	ret = tjDecompressHeader2( handle, m_image_buffer_compressed,
 						jpeg_size, &width, &height, &sub_sampling );
@@ -194,6 +194,9 @@ int CSDLOpenGLTest::tj_decompress(void) {
 					jpeg_size,
 					m_image_buffer_decompressed,
 					width, pitch, height, pixel_format, flags );
+	if ( ret < 0 ) {
+		fprintf( stderr, "tj_decompress(): error: tjDecompress2(): %s\n", tjGetErrorStr() );
+	}
 
 	tjDestroy( handle );
 
@@ -516,6 +519,12 @@ int main(int argc, char* argv[]) {
 					//
 					SDL_RenderCopy( renderer, texture, NULL, NULL );
 					SDL_RenderPresent( renderer );
+
+
+					//if ( texture ) {
+					//	SDL_DestroyTexture( texture );
+					//	texture = NULL;
+					//}
 #endif
 				}
 				else {
